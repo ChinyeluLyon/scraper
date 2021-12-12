@@ -26,10 +26,9 @@ app.prepare().then(() => {
         html = response.data;
 
         const $ = cheerio.load(html);
-        $(".page-header", html).each(() => {
-          const idk = $(".active").text();
+        $(".product_pod").each((i, elem) => {
+          const idk = $(elem).find("h3").find("a").attr("title");
           stuff.push(idk);
-          //   console.log("IDK: ", idk);
         });
         console.log(stuff);
       });

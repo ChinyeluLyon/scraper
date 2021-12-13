@@ -10,7 +10,8 @@ const handle = app.getRequestHandler();
 
 const port = 3000;
 const scrapeUrl = "http://books.toscrape.com/";
-const currysUrl = "https://www.currys.co.uk/gbuk/index.html";
+const currysUrl =
+  "https://www.currys.co.uk/gbuk/search-keywords/xx_xx_xx_xx_xx/-flashdeals-/1_1000/relevance-desc/xx-criteria.html";
 
 app.prepare().then(() => {
   const server = express();
@@ -18,22 +19,22 @@ app.prepare().then(() => {
   server.get("/currys", (req, res) => {
     try {
       axios(currysUrl).then((response) => {
-        const stuff = [];
-        html = response.data;
+        const testArr = [];
+        const scrapedHtml = response.data;
 
-        const $ = cheerio.load(html);
+        const $ = cheerio.load(scrapedHtml);
         $(".ProductListItem__DivWrapper-sc-pb4x98-7 .cgxObq").each(
           (i, elem) => {
-            const idk = $(elem)
+            const test = $(elem)
               .find(
                 ".ProductListItem__ProductPrices-sc-pb4x98-5 .beyIVb .productPrices"
               )
               .find(".ProductPriceBlock__Price-eXioPm .eTWvaA")
               .text();
-            stuff.push(idk);
+            testArr.push(test);
           }
         );
-        res.json(stuff);
+        res.json(testArr);
       });
     } catch (error) {
       console.log(error);

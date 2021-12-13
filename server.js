@@ -15,44 +15,42 @@ const currysUrl = "https://www.currys.co.uk/gbuk/index.html";
 app.prepare().then(() => {
   const server = express();
 
-  //   server.get("/test/:parameter", function (req, res, next) {
-  //     console.log(req.query.hi);
-  //     res.send(`Test ${req.params.parameter}`);
-  //   });
-
-  //   server.get("/currys", (req, res) => {
-  //     try {
-  //       axios(currysUrl).then((response) => {
-  //         const stuff = [];
-  //         html = response.data;
-
-  //         const $ = cheerio.load(html);
-  //         $(".blocks__item").each((i, elem) => {
-  //           const idk = $(elem)
-  //             .find(".block__description")
-  //             .find("a")
-  //             .attr("title");
-  //           stuff.push(idk);
-  //         });
-  //         res.json(stuff);
-  //       });
-  //     } catch (error) {
-  //       console.log(error);
-  //     }
-  //   });
-
-  server.get("/scrape", (req, res) => {
+  server.get("/currys", (req, res) => {
     try {
-      axios(scrapeUrl).then((response) => {
+      axios(currysUrl).then((response) => {
         const stuff = [];
         html = response.data;
 
         const $ = cheerio.load(html);
-        $(".product_pod").each((i, elem) => {
-          const idk = $(elem).find("h3").find("a").attr("title");
-          stuff.push(idk);
-        });
+        $(".ProductListItem__DivWrapper-sc-pb4x98-7 .cgxObq").each(
+          (i, elem) => {
+            const idk = $(elem)
+              .find(
+                ".ProductListItem__ProductPrices-sc-pb4x98-5 .beyIVb .productPrices"
+              )
+              .find(".ProductPriceBlock__Price-eXioPm .eTWvaA")
+              .text();
+            stuff.push(idk);
+          }
+        );
         res.json(stuff);
+      });
+    } catch (error) {
+      console.log(error);
+    }
+  });
+
+  server.get("/scrape", (req, res) => {
+    try {
+      axios(scrapeUrl).then((response) => {
+        const bookTitlesArr = [];
+
+        const $ = cheerio.load(response.data);
+        $(".product_pod").each((i, elem) => {
+          const bookTitle = $(elem).find("h3").find("a").attr("title");
+          bookTitlesArr.push(bookTitle);
+        });
+        res.json(bookTitlesArr);
       });
     } catch (error) {
       console.log(error);

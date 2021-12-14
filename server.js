@@ -64,6 +64,6 @@ app.prepare().then(() => {
 
   server.listen(port, (err) => {
     if (err) throw err;
-    else console.log(`server gwarning on port ${port}`);
+    else console.log(`server gwarning on port ${port} 👌`);
   });
 });

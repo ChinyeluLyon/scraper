@@ -3,6 +3,7 @@ const express = require("express");
 
 const axios = require("axios");
 const cheerio = require("cheerio");
+const puppeteer = require("puppeteer");
 
 const dev = process.env.NODE_ENV !== "production";
 const app = next({ dev });
@@ -18,24 +19,40 @@ app.prepare().then(() => {
 
   server.get("/currys", (req, res) => {
     try {
-      axios(currysUrl).then((response) => {
-        const testArr = [];
-        const scrapedHtml = response.data;
+      (async () => {
+        // set some options (set headless to false so we can see
+        // this automated browsing experience)
+        let launchOptions = { headless: false, args: ["--start-maximized"] };
 
-        const $ = cheerio.load(scrapedHtml);
-        $(".ProductListItem__DivWrapper-sc-pb4x98-7 .cgxObq").each(
-          (i, elem) => {
-            const test = $(elem)
-              .find(
-                ".ProductListItem__ProductPrices-sc-pb4x98-5 .beyIVb .productPrices"
-              )
-              .find(".ProductPriceBlock__Price-eXioPm .eTWvaA")
-              .text();
-            testArr.push(test);
-          }
+        const browser = await puppeteer.launch(launchOptions);
+        const page = await browser.newPage();
+
+        // set viewport and user agent (just in case for nice viewing)
+        await page.setViewport({ width: 1366, height: 768 });
+        await page.setUserAgent(
+          "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/78.0.3904.108 Safari/537.36"
         );
-        res.json(testArr);
-      });
+
+        // go to the target web
+        await page.goto(currysUrl);
+
+        // wait for element defined by XPath appear in page
+        await page.waitForXPath('//*[@id="onetrust-accept-btn-handler"]');
+
+        // evaluate XPath expression of the target selector (it return array of ElementHandle)
+        let elHandle = await page.$x('//*[@id="onetrust-accept-btn-handler"]');
+
+        // prepare to get the textContent of the selector above (use page.evaluate)
+        // let selectedText = await page.evaluate(
+        //   (el) => el.textContent,
+        //   elHandle[0]
+        // );
+
+        await page.click("[id='onetrust-accept-btn-handler']");
+
+        // close the browser
+        // await browser.close();
+      })();
     } catch (error) {
       console.log(error);
     }

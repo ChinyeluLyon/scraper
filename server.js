@@ -16,7 +16,7 @@ const currysUrlPtA =
 const currysStartPage = 1;
 const currysPageSize = 10;
 const currysUrlPtB = "/relevance-desc/xx-criteria.html";
-const currysUrl = `${currysUrlPtA}${currysStartPage}_${currysPageSize}${currysUrlPtB}`;
+const currysInitUrl = `${currysUrlPtA}${currysStartPage}_${currysPageSize}${currysUrlPtB}`;
 
 app.prepare().then(() => {
   const server = express();
@@ -34,7 +34,7 @@ app.prepare().then(() => {
           "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/78.0.3904.108 Safari/537.36"
         );
         // go to the target page
-        await page.goto(currysUrl);
+        await page.goto(currysInitUrl);
 
         await page.waitForSelector("#onetrust-accept-btn-handler");
         await page.click("#onetrust-accept-btn-handler");
@@ -49,15 +49,27 @@ app.prepare().then(() => {
         const numOfPages = Math.ceil(numOfItems / currysPageSize);
         console.log("numOfPages: ", numOfPages);
 
-        await page.waitForSelector(".product");
-        let productClassArr = await page.$$(".product");
-        // https://github.com/puppeteer/puppeteer/blob/main/docs/api.md#pageselector-1
+        const getAllProductInfo = async () => {
+          await page.waitForSelector(".product");
+          let productClassArr = await page.$$(".product");
+          // https://github.com/puppeteer/puppeteer/blob/main/docs/api.md#pageselector-1
 
-        productClassArr.forEach(async (el) => {
-          const nameEl = await el.$(".productTitle");
-          let name = await page.evaluate((el) => el.textContent, nameEl);
-          console.log(name);
-        });
+          productClassArr.forEach(async (el) => {
+            const nameEl = await el.$(".productTitle");
+            let name = await page.evaluate((el) => el.textContent, nameEl);
+            console.log(name);
+          });
+        };
+
+        await getAllProductInfo(1);
+
+        for (let i = 2; i <= numOfPages; i++) {
+          await page.goto(
+            `${currysUrlPtA}${i}_${currysPageSize}${currysUrlPtB}`
+          );
+
+          await getAllProductInfo();
+        }
 
         // close the browser
         // await browser.close();

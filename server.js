@@ -11,8 +11,12 @@ const handle = app.getRequestHandler();
 
 const port = 3000;
 const scrapeUrl = "http://books.toscrape.com/";
-const currysUrl =
-  "https://www.currys.co.uk/gbuk/search-keywords/xx_xx_xx_xx_xx/-flashdeals-/1_1000/relevance-desc/xx-criteria.html";
+const currysUrlPtA =
+  "https://www.currys.co.uk/gbuk/search-keywords/xx_xx_xx_xx_xx/-flashdeals-/";
+const currysStartPage = 1;
+const currysPageSize = 10;
+const currysUrlPtB = "/relevance-desc/xx-criteria.html";
+const currysUrl = `${currysUrlPtA}${currysStartPage}_${currysPageSize}${currysUrlPtB}`;
 
 app.prepare().then(() => {
   const server = express();
@@ -34,6 +38,16 @@ app.prepare().then(() => {
 
         await page.waitForSelector("#onetrust-accept-btn-handler");
         await page.click("#onetrust-accept-btn-handler");
+
+        await page.waitForSelector(".dc-product-listing__products-count");
+        let numOfItemsEl = await page.$(".dc-product-listing__products-count");
+        let numOfItemsStr = await page.evaluate(
+          (el) => el.textContent,
+          numOfItemsEl
+        );
+        const numOfItems = Number(numOfItemsStr.split("items")[0]);
+        const numOfPages = Math.ceil(numOfItems / currysPageSize);
+        console.log("numOfPages: ", numOfPages);
 
         await page.waitForSelector(".product");
         let productClassArr = await page.$$(".product");

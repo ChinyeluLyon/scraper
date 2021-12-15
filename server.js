@@ -55,18 +55,20 @@ app.prepare().then(() => {
           // https://github.com/puppeteer/puppeteer/blob/main/docs/api.md#pageselector-1
 
           productClassArr.forEach(async (el) => {
-            const name = await el.$eval(".productTitle", (e) => e.textContent);
+            const nameEl = await el.$(".productTitle");
+            const name = await nameEl.evaluate((e) => e.textContent);
 
-            // const preloadHref = await el.$('link[rel=preload]', (el) => el.href);
+            const hrefElement = await nameEl.$("a");
+            const href = await hrefElement.evaluate((e) => e.href);
 
-            console.log(name);
+            console.log({ name, href });
           });
           console.log(`\nNEW PAGE(${pageNum})\n`);
         };
 
         await getAllProductInfo(1);
 
-        for (let i = 2; i <= numOfPages; i++) {
+        for (let i = 6; i <= numOfPages; i++) {
           await page.goto(
             `${currysUrlPtA}${i}_${currysPageSize}${currysUrlPtB}`
           );
@@ -105,6 +107,6 @@ app.prepare().then(() => {
 
   server.listen(port, (err) => {
     if (err) throw err;
-    else console.log(`server gwarning on port ${port} 👌`);
+    else console.log(`server gwarnin' onna port ${port} 👌`);
   });
 });

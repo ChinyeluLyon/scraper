@@ -18,29 +18,6 @@ const currysPageSize = 10;
 const currysUrlPtB = "/relevance-desc/xx-criteria.html";
 const currysInitUrl = `${currysUrlPtA}${currysStartPage}_${currysPageSize}${currysUrlPtB}`;
 
-const getAllProductInfo = async (pageNum, pageObj, dealDataArr) => {
-  await pageObj.waitForSelector(".product");
-  let productClassArr = await pageObj.$$(".product");
-  // https://github.com/puppeteer/puppeteer/blob/main/docs/api.md#pageselector-1
-
-  console.log(
-    "\n\t\t\tLENGTH ======================== " + productClassArr.length
-  );
-
-  for (let i = 0; i < productClassArr.length; i++) {
-    const el = productClassArr[i];
-    const nameEl = await el.$(".productTitle");
-    const name = await nameEl.evaluate((e) => e.textContent);
-
-    const hrefElement = await nameEl.$("a");
-    const href = await hrefElement.evaluate((e) => e.href);
-    dealDataArr.push({ name, href });
-    console.log({ name, href });
-  }
-
-  console.log(`\nNEW PAGE(${pageNum})\n`);
-};
-
 app.prepare().then(() => {
   const server = express();
 
@@ -73,16 +50,35 @@ app.prepare().then(() => {
         const numOfPages = Math.ceil(numOfItems / currysPageSize);
         console.log("numOfPages: ", numOfPages);
 
+        const getAllProductInfo = async (pageNum) => {
+          await page.waitForSelector(".product");
+          let productClassArr = await page.$$(".product");
+          // https://github.com/puppeteer/puppeteer/blob/main/docs/api.md#pageselector-1
+
+          for (let i = 0; i < productClassArr.length; i++) {
+            const el = productClassArr[i];
+            const nameEl = await el.$(".productTitle");
+            const name = await nameEl.evaluate((e) => e.textContent);
+
+            const hrefElement = await nameEl.$("a");
+            const href = await hrefElement.evaluate((e) => e.href);
+            dealData.push({ name, href });
+            console.log({ name, href });
+          }
+
+          console.log(`\nNEW PAGE(${pageNum})\n`);
+        };
+
         for (let i = 1; i <= numOfPages; i++) {
           await page.goto(
             `${currysUrlPtA}${i}_${currysPageSize}${currysUrlPtB}`
           );
 
-          await getAllProductInfo(i, page, dealData);
+          await getAllProductInfo(i);
         }
 
         // close the browser
-        // await browser.close();
+        await browser.close();
         console.log("dealData JSON: ", dealData);
         res.json(dealData);
       })();

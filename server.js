@@ -49,7 +49,7 @@ app.prepare().then(() => {
         const numOfPages = Math.ceil(numOfItems / currysPageSize);
         console.log("numOfPages: ", numOfPages);
 
-        const getAllProductInfo = async () => {
+        const getAllProductInfo = async (pageNum) => {
           await page.waitForSelector(".product");
           let productClassArr = await page.$$(".product");
           // https://github.com/puppeteer/puppeteer/blob/main/docs/api.md#pageselector-1
@@ -59,6 +59,7 @@ app.prepare().then(() => {
             let name = await page.evaluate((el) => el.textContent, nameEl);
             console.log(name);
           });
+          console.log(`\nNEW PAGE(${pageNum})\n`);
         };
 
         await getAllProductInfo(1);
@@ -68,7 +69,7 @@ app.prepare().then(() => {
             `${currysUrlPtA}${i}_${currysPageSize}${currysUrlPtB}`
           );
 
-          await getAllProductInfo();
+          await getAllProductInfo(i);
         }
 
         // close the browser

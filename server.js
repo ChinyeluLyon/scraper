@@ -55,8 +55,10 @@ app.prepare().then(() => {
           // https://github.com/puppeteer/puppeteer/blob/main/docs/api.md#pageselector-1
 
           productClassArr.forEach(async (el) => {
-            const nameEl = await el.$(".productTitle");
-            let name = await page.evaluate((el) => el.textContent, nameEl);
+            const name = await el.$eval(".productTitle", (e) => e.textContent);
+
+            // const preloadHref = await el.$('link[rel=preload]', (el) => el.href);
+
             console.log(name);
           });
           console.log(`\nNEW PAGE(${pageNum})\n`);

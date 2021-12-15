@@ -20,35 +20,30 @@ app.prepare().then(() => {
   server.get("/currys", (req, res) => {
     try {
       (async () => {
-        // set some options (set headless to false so we can see
-        // this automated browsing experience)
+        // set some options (set headless to false so we can see this automated browsing experience)
         let launchOptions = { headless: false, args: ["--start-maximized"] };
-
         const browser = await puppeteer.launch(launchOptions);
         const page = await browser.newPage();
-
         // set viewport and user agent (just in case for nice viewing)
         await page.setViewport({ width: 1366, height: 768 });
         await page.setUserAgent(
           "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/78.0.3904.108 Safari/537.36"
         );
-
-        // go to the target web
+        // go to the target page
         await page.goto(currysUrl);
 
-        // wait for element defined by XPath appear in page
-        await page.waitForXPath('//*[@id="onetrust-accept-btn-handler"]');
+        await page.waitForSelector("#onetrust-accept-btn-handler");
+        await page.click("#onetrust-accept-btn-handler");
 
-        // evaluate XPath expression of the target selector (it return array of ElementHandle)
-        let elHandle = await page.$x('//*[@id="onetrust-accept-btn-handler"]');
+        await page.waitForSelector(".product");
+        let productClassArr = await page.$$(".product");
+        // https://github.com/puppeteer/puppeteer/blob/main/docs/api.md#pageselector-1
 
-        // prepare to get the textContent of the selector above (use page.evaluate)
-        // let selectedText = await page.evaluate(
-        //   (el) => el.textContent,
-        //   elHandle[0]
-        // );
-
-        await page.click("[id='onetrust-accept-btn-handler']");
+        productClassArr.forEach(async (el) => {
+          const nameEl = await el.$(".productTitle");
+          let name = await page.evaluate((el) => el.textContent, nameEl);
+          console.log(name);
+        });
 
         // close the browser
         // await browser.close();
